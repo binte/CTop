@@ -19,7 +19,9 @@
 #define CtopDecoder_H
 
 #include <list>
+#include <mutex>
 #include <vector>
+#include <cassert>
 #include <iostream>
 #include <algorithm>
 
@@ -29,11 +31,10 @@ public:
 	~CtopDecoder();
 
 	double decode(const std::vector< double >& chromosome) const;
-	double calcularDistancia(int x_1, int y_1, int x_2, int y_2) const;
-	int existe(std::vector<int> visitados, int cliente) const;
 
 private:
-
+	double calcularDistancia(int x_1, int y_1, int x_2, int y_2) const;
+	int existe(std::vector<int> visitados, int cliente) const;
 };
 
 #endif

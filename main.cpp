@@ -1,6 +1,8 @@
+#include <list>
 #include <fstream>
 #include <iostream>
 #include <string>
+
 #include "CtopDecoder.h"
 #include "MTRand.h"
 #include "BRKGA.h"
@@ -12,11 +14,15 @@ int XCOORDENADA[100];
 int YCOORDENADA[100];
 int CAPACIDADE[100];
 int PREMIO[100];
-int NCARROS = 0;
+int CARS = 0;
 int NCLIENTES = 0;
 int evolve = 0;
 int p = 0;
 int totalpremio = 0;
+double totalBest = 0;
+
+std::mutex mutex;
+std::vector<std::vector<int>> routes;
 
 
 int main(int argc, char* argv[]) {
@@ -33,7 +39,6 @@ int main(int argc, char* argv[]) {
 	char       bufInicio[80];
 	tstructInicio = *localtime(&inicio);
 	strftime(bufInicio, sizeof(bufInicio), "%Y-%m-%d %X", &tstructInicio);
-	std::cout << bufInicio << std::endl << std::endl;
 
 	const double pe = 0.20;		// fraction of population to be the elite-set
 	const double pm = 0.10;		// fraction of population to be replaced by mutants
@@ -101,7 +106,7 @@ int main(int argc, char* argv[]) {
 				if (pos != std::string::npos)
 					value = value.substr(0, pos);
 			
-				NCARROS = std::stoi(value);
+				CARS = std::stoi(value);
 			
 				break;
 			
@@ -194,29 +199,46 @@ int main(int argc, char* argv[]) {
 		char       bufFim[80];
 		tstructFim = *localtime(&nowFim);
 		strftime(bufFim, sizeof(bufFim), "%Y-%m-%d %X", &tstructFim);
-		std::cout << bufFim << std::endl << std::endl;
 
 		std::cout << std::endl;
-		std::cout << "RESULTADO FINAL" << std::endl;
 		std::cout << "INICIO: " << bufInicio << std::endl;
 		std::cout << "FIM: " << bufFim << std::endl;
-		std::cout << "O MELHOR RESULTADO PARA A FUNCAO OBJECTIVA = "
+		std::cout << "O MELHOR RESULTADO PARA A FUNCAO OBJECTIVO = "
 			<< (totalpremio - algorithm.getBestFitness()) << std::endl;
+		
+		std::ofstream output;
+		output.open("resultado.txt", std::fstream::trunc); // remove the content of the output file, and open it
 
-		std::fstream output;
-		output.open("resultado.txt", std::ios::in | std::ios::out | std::ios::app);
-		output << std::endl;
-		output << "RESULTADO FINAL" << std::endl;
+		output << "POPULACAO: " << p << std::endl;
+		output << "EVOLUCOES: " << evolve << std::endl;
+		output << "CLIENTES: " << NCLIENTES << std::endl;
+		output << "VIATURAS: " << CARS << std::endl;
+		output << "DISTANCIAMAX: " << DISTANCIAMAX << std::endl;
+		output << "CAPACIDADEMAX: " << CAPACIDADEMAX << std::endl;
+		output << "MAXPREMIO POSSIVEL: " << totalpremio << std::endl << std::endl;
+
+		for (unsigned i = 0; i < routes.size(); i++) {
+			
+			output << "Rota " << i + 1 << ": ";
+			
+			for (unsigned j = 0; j < routes[i].size(); j++) {
+			
+				output << (routes[i][j] + 1);
+			
+				if (j != routes[i].size() - 1)
+					output << "->";
+			}
+			
+			output << std::endl;
+		}
+		
+		output << "Total Premio: " << totalBest << std::endl << std::endl << std::endl;
 		output << "INICIO: " << bufInicio << std::endl;
 		output << "FIM: " << bufFim << std::endl;
-		output << "O MELHOR RESULTADO PARA A FUNCAO OBJECTIVO = "
-			<< (totalpremio - algorithm.getBestFitness()) << std::endl;
 		output.close();
-
 	}
-	else {
-		std::cout << "dadosctop.dat EM FALTA.";
-	}
+	else
+		std::cout << "File " << argv[1] << " does not exist." << std::endl;
 
-	return 0;
+	return EXIT_SUCCESS;
 }
