@@ -20,6 +20,7 @@
 
 #include <list>
 #include <vector>
+#include <iostream>
 #include <algorithm>
 
 class CtopDecoder {
@@ -29,8 +30,7 @@ public:
 
 	double decode(const std::vector< double >& chromosome) const;
 	double calcularDistancia(int x_1, int y_1, int x_2, int y_2) const;
-	int CtopDecoder::existe(
-		std::vector<int> visitados, int cliente) const;
+	int existe(std::vector<int> visitados, int cliente) const;
 
 private:
 
