@@ -1,0 +1,1 @@
+A resolution for the CTOP problem coded by an University of Minho student, through the use of the BRKGA framework, implemented by Mauricio Resende. This resolution is used as a basis for understanding BRKGA functioning, as well as a starting point for an optimised implementation of CTOP.
