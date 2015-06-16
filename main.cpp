@@ -22,7 +22,7 @@ int totalpremio = 0;
 double totalBest = 0;
 
 std::mutex mutex;
-std::vector<std::vector<int>> routes;
+std::vector<std::vector<int>> bestRoutes;
 
 
 int main(int argc, char* argv[]) {
@@ -217,15 +217,15 @@ int main(int argc, char* argv[]) {
 		output << "CAPACIDADEMAX: " << CAPACIDADEMAX << std::endl;
 		output << "MAXPREMIO POSSIVEL: " << totalpremio << std::endl << std::endl;
 
-		for (unsigned i = 0; i < routes.size(); i++) {
+		for (unsigned i = 0; i < bestRoutes.size(); i++) {
 			
 			output << "Rota " << i + 1 << ": ";
 			
-			for (unsigned j = 0; j < routes[i].size(); j++) {
+			for (unsigned j = 0; j < bestRoutes[i].size(); j++) {
 			
-				output << (routes[i][j] + 1);
+				output << (bestRoutes[i][j] + 1);
 			
-				if (j != routes[i].size() - 1)
+				if (j != bestRoutes[i].size() - 1)
 					output << "->";
 			}
 			
