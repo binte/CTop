@@ -14,6 +14,7 @@ main.o: main.cpp MTRand.h BRKGA.h
 CtopDecoder.o: CtopDecoder.cpp CtopDecoder.h MTRand.h
 	$(CPP) $(CFLAGS) -c CtopDecoder.cpp
 
+
 # Remove:
 clean:
 	rm -f $(OBJECTS) *~

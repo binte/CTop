@@ -16,7 +16,7 @@ double totalBest = 0;
 
 MTRand rng;
 
-std::vector< std::pair<int, int> > coordenadas;
+std::vector< std::pair<float, float> > coordenadas;
 std::vector<int> capacities;
 std::vector<int> prizes;
 
@@ -223,6 +223,7 @@ int main(int argc, char* argv[]) {
 		output << "MAX CAPACITY: " << maxCapacity << std::endl;
 		output << "MAX FITNESS: " << maxFit << std::endl << std::endl;
 
+		/* Print the routes, each of which has been incremented, as well as each client, for them not to start by 0 */
 		for (unsigned i = 0; i < bestRoutes.size(); i++) {
 			
 			output << "Route " << i + 1 << ": ";

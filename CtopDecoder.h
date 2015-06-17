@@ -38,13 +38,24 @@ int extern maxFit;
 
 MTRand extern rng;
 
-std::vector< std::pair<int, int> > extern coordenadas;
+std::vector< std::pair<float, float> > extern coordenadas;
 std::vector<int> extern capacities;
 std::vector<int> extern prizes;
 
 std::mutex extern mutex;
 double extern totalBest;
 std::vector<std::vector<int>> extern bestRoutes;
+
+
+/* struct used to change the order of sorting, so that the given chromosome can be processed in descending order as well */
+struct greater
+{
+    template<class T>
+    
+	bool operator() (T const &a, T const &b) const { 
+		return a > b; 
+	}
+};
 
 
 class CtopDecoder {
@@ -56,8 +67,7 @@ public:
 
 private:
 	double distance(std::pair<int, int> p1, std::pair<int, int> p2) const;
-	double genRandom(void);
-	int existe(std::vector<int> visited, int cliente) const;
+	int exist(std::vector<int> visited, int cliente) const;
 };
 
 #endif
