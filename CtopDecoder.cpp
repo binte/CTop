@@ -6,22 +6,6 @@
 
 #include "CtopDecoder.h"
 
-int extern CAPACIDADEMAX;
-int extern DISTANCIAMAX;
-int extern XCOORDENADA[100];
-int extern YCOORDENADA[100];
-int extern CAPACIDADE[100];
-int extern PREMIO[100];
-int extern CARS;
-int extern NCLIENTES;
-int extern evolve;
-int extern p;
-int extern totalpremio;
-double extern totalBest;
-
-std::mutex extern mutex;
-std::vector<std::vector<int>> extern bestRoutes;
-
 
 CtopDecoder::CtopDecoder() {}
 CtopDecoder::~CtopDecoder() {}
@@ -29,105 +13,112 @@ CtopDecoder::~CtopDecoder() {}
 
 double CtopDecoder::decode(const std::vector< double >& chromosome) const {
 	
-	/* Vector of pairs (double, unsigned) with size chromosome.size() */
+	double totalAllRoutes = 0;
+	std::vector<int> visitedRoutes;
+	std::pair<int,int> deposit = std::make_pair(35,35);
+	
+	/* Declare ranking as a vector of pairs (double, unsigned) with size chromosome.size() */
 	std::vector< std::pair< double, unsigned > > ranking(chromosome.size());
 	
 	/* Local vector with the routes, for each iteration of the decoder */
 	std::vector<std::vector<int>> routes;
 	
+	
+	/* Fill each position i of ranking with pairs of the type (chromosome[i], i) */
 	for (unsigned i = 0; i < chromosome.size(); ++i)
 		ranking[i] = std::pair< double, unsigned >(chromosome[i], i);
 		
-	std::sort(ranking.begin(), ranking.end());
-
-	double totalTodasRotas = 0;
-	std::vector<int> visitadosRotas;
+	std::sort(ranking.begin(), ranking.end());  // Sorts the elements in ranking into ascending order, based on their gene value
 
 	
 	// Iterate the cars
-	for (int j = 0; j < CARS; j++) {
+	for (int j = 0; j < cars; j++) {
 
 		double totalDistancia = 0;
 		double totalCapacidade = 0;
-		double totalRota = 0;
+		double totalRoute = 0;
 
-		std::vector<int> visitados;
+		std::vector<int> visited;
 		
-		//SE ESTA A INICIAR SAI DO DEPOSITO INICIAL
+		/* Iterate all the clients, until finding one that: 
+		 		=> Is suitable to be visited in a roundtrip from the deposit within the deadline; 
+				=> The sum of its capacity with the total capacity used, is less or equal to the max capacity;
+				=> 
+		*/
 		for (unsigned i = 0; i < ranking.size(); i++) {
 
-			int clienteDestino = ranking[i].second;
-			double depositoInicial = calcularDistancia(35, 35, XCOORDENADA[clienteDestino], YCOORDENADA[clienteDestino]);
-			double depositoFinal = calcularDistancia(XCOORDENADA[clienteDestino], YCOORDENADA[clienteDestino], 35, 35);
+// rng.randInt(coordenadas.size()) Onde utilizar aleatoriedade no algoritmo construtivo?
+
+			int client = ranking[i].second;
+			double dist = distance(deposit, coordenadas[client]);
 			
 /*			std::cout << "\ndepositoInicial: " << depositoInicial << 
-									 "\nDISTANCIAMAX: " << DISTANCIAMAX <<
+									 "\ndeadline: " << deadline <<
 			 						 "\ndepositoFinal: " << depositoFinal <<
 									 "\ntotalCapacidade: " << totalCapacidade <<
-									 "\nCAPACIDADE[clienteDestino]: " << CAPACIDADE[clienteDestino] <<
-									 "\nclienteDestino: " << clienteDestino <<
-									 "\nCAPACIDADEMAX: " << CAPACIDADEMAX;
+									 "\ncapacities[client]: " << capacities[client] <<
+									 "\nclient: " << client <<
+									 "\nMAX CAPACITY: " << maxCapacity;
 			
 			getchar();*/
 			
 			
-			if (depositoInicial <= (DISTANCIAMAX - depositoFinal)
-				&& (totalCapacidade + CAPACIDADE[clienteDestino]) <= CAPACIDADEMAX
-				&& (visitadosRotas.size() <= 0 || existe(visitadosRotas, clienteDestino) != 1)) {
+			if (2*dist <= deadline
+				&& (totalCapacidade + capacities[client]) <= maxCapacity
+				&& (visitedRoutes.size() <= 0 || existe(visitedRoutes, client) != 1)) {
 					
-				totalDistancia += depositoInicial;
-				totalCapacidade += CAPACIDADE[clienteDestino];
-				totalRota += PREMIO[clienteDestino];
-				visitados.push_back(clienteDestino);
-				visitadosRotas.push_back(clienteDestino);
+				totalDistancia += dist;
+				totalCapacidade += capacities[client];
+				totalRoute += prizes[client];
+				visited.push_back(client);
+				visitedRoutes.push_back(client);
 				
-				break;
+				break; // exit the innermost FOR cycle
 			}
 		}
 
-		if (visitadosRotas.size() > 0) {
+		if (visitedRoutes.size() > 0) {
 
-			//ATE DISTANCIA MAXIMA MENOS DEPOSITO FINAL OU CAPACIDADE MAXIMA SER ULTRAPASSADA
-			for (unsigned int i = 0; i < ranking.size(); i++) {
+			//ATE DISTANCIA MAXIMA MENOS DEPOSITO FINAL OU CAPACITY MAXIMA SER ULTRAPASSADA
+			for (unsigned i = 0; i < ranking.size(); i++) {
 
-				int clienteDestino = ranking[i].second;
+				int client = ranking[i].second;
 				
-				double distancia = calcularDistancia(XCOORDENADA[visitadosRotas.back()], YCOORDENADA[visitadosRotas.back()],
-					XCOORDENADA[clienteDestino], YCOORDENADA[clienteDestino]);
-				double depositoFinal = calcularDistancia(XCOORDENADA[clienteDestino], YCOORDENADA[clienteDestino], 35, 35);
+				double distancia = distance(coordenadas[visitedRoutes.back()], coordenadas[client]);
+				double depositoFinal = distance(coordenadas[client], deposit);
 
-				if ((totalDistancia + distancia) <= (DISTANCIAMAX - depositoFinal)
-					&& (totalCapacidade + CAPACIDADE[clienteDestino]) <= CAPACIDADEMAX
-					&& existe(visitadosRotas, clienteDestino) != 1){
+				if ((totalDistancia + distancia) <= (deadline - depositoFinal)
+					&& (totalCapacidade + capacities[client]) <= maxCapacity
+					&& existe(visitedRoutes, client) != 1) {
 				
 					totalDistancia += distancia;
-					totalCapacidade += CAPACIDADE[clienteDestino];
-					totalRota += PREMIO[clienteDestino];
-					visitados.push_back(clienteDestino);
-					visitadosRotas.push_back(clienteDestino);
+					totalCapacidade += capacities[client];
+					totalRoute += prizes[client];
+					visited.push_back(client);
+					visitedRoutes.push_back(client);
 				}
 			}
 
 			//SE ULTRAPASSA DISTANCIA MAXIMA MENOS A DISTANCIA PARA O DEPOSITO FINAL
-			double depositoFinal = calcularDistancia(XCOORDENADA[visitadosRotas.back()], YCOORDENADA[visitadosRotas.back()], 35, 35);
+			double depositoFinal = distance(coordenadas[visitedRoutes.back()], deposit);
 			totalDistancia += depositoFinal;
 		}
 		
 		// Insert new route at the tail of the routes vector for this iteration
-		routes.push_back(visitados);
+		routes.push_back(visited);
 
-		totalTodasRotas += totalRota;
+		totalAllRoutes += totalRoute;
 	}
 
 	// A mutex guarantees that the code between lock() and unlock() methods is atomic
 	mutex.lock();
 		
 	// If a new maximum fitness was found, update the global routes vector, and print the fitness
-	if (totalTodasRotas > totalBest) {
+	if (totalAllRoutes > totalBest) {
 	
 		/* Clear the contents of the bestRoutes vector, thus allowing new best routes, if found, 
 		to be inserted after being calculated in this iteration of the constructive algorithm  */
-		for ( unsigned int i=0 ; i<bestRoutes.size() ; i++ ) {
+		for ( unsigned i=0 ; i<bestRoutes.size() ; i++ ) {
   
 			bestRoutes.at(i).clear();
 			bestRoutes.at(i).shrink_to_fit();
@@ -140,27 +131,43 @@ double CtopDecoder::decode(const std::vector< double >& chromosome) const {
 		}
 	
 		// copy the routes obtained in this iteration of the decoder, replacing the previous best routes
-		for ( unsigned int i=0 ; i<routes.size() ; i++ )
+		for ( unsigned i=0 ; i<routes.size() ; i++ )
 			bestRoutes.push_back(routes.at(i)); 
 	
-		totalBest = totalTodasRotas;
+		totalBest = totalAllRoutes;
   
 		std::cout << totalBest << std::endl;
 	}
-		
+
 	mutex.unlock();
 
-	return totalpremio - totalTodasRotas;
+	return maxFit - totalAllRoutes;
 }
 
-double CtopDecoder::calcularDistancia(int x_1, int y_1, int x_2, int y_2) const {
+/* Calculate the euclidean distance between two points */
+double CtopDecoder::distance(std::pair<int, int> p1, std::pair<int, int> p2) const {
 	
-	return sqrt(pow((x_1 - x_2), 2) + pow((y_1 - y_2), 2));
+	return sqrt(pow((p1.first - p2.first), 2) + pow((p1.second - p2.second), 2));
 }
 
-int CtopDecoder::existe(std::vector<int> visitados, int cliente) const {
+/* Seed and generate new random number */
+double CtopDecoder::genRandom(void) {
 	
-	for (std::vector<int>::iterator it = visitados.begin(); it != visitados.end(); ++it)
+	timeval t;
+	pid_t pid = getpid(); // only works in unix based machines
+	// DWORD WINAPI pid =  GetCurrentProcessId(); // only works in windows machines
+
+	gettimeofday(&t, NULL);
+
+	/* Intializes a random number generator, based in the current time and the process pid */
+	srand(t.tv_usec * t.tv_sec * pid);
+	
+	return rand();
+}
+
+int CtopDecoder::existe(std::vector<int> visited, int cliente) const {
+	
+	for (std::vector<int>::iterator it = visited.begin(); it != visited.end(); ++it)
 		if ( (*it) == cliente ) 
 			return 1;
 	

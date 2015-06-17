@@ -8,18 +8,17 @@
 #include "BRKGA.h"
 
 
-int CAPACIDADEMAX = 0;
-int DISTANCIAMAX = 0;
-int XCOORDENADA[100];
-int YCOORDENADA[100];
-int CAPACIDADE[100];
-int PREMIO[100];
-int CARS = 0;
-int NCLIENTES = 0;
-int evolve = 0;
-int p = 0;
-int totalpremio = 0;
+int maxCapacity = 0;
+int deadline = 0;
+int cars = 0;
+int maxFit = 0;
 double totalBest = 0;
+
+MTRand rng;
+
+std::vector< std::pair<int, int> > coordenadas;
+std::vector<int> capacities;
+std::vector<int> prizes;
 
 std::mutex mutex;
 std::vector<std::vector<int>> bestRoutes;
@@ -34,6 +33,9 @@ int main(int argc, char* argv[]) {
 		return EXIT_FAILURE;
 	}
 
+	int p = 0;
+	int evols = 0;
+	int clients = 0;
 	time_t     inicio = time(0);
 	struct tm  tstructInicio;
 	char       bufInicio[80];
@@ -82,7 +84,7 @@ int main(int argc, char* argv[]) {
 				if (pos != std::string::npos)
 					value = value.substr(0, pos);
 			
-				evolve = std::stoi(value);
+				evols = std::stoi(value);
 			
 				break;
 			
@@ -94,7 +96,10 @@ int main(int argc, char* argv[]) {
 				if (pos != std::string::npos)
 					value = value.substr(0, pos);
 			
-				NCLIENTES = std::stoi(value);
+				clients = std::stoi(value);
+				coordenadas.reserve(clients);  // allocate space for the coordinates of each vertice/client
+				capacities.reserve(clients);	// allocate space for the capacities of each client
+				prizes.reserve(clients);  // allocate space for the prizes given by reaching each client
 			
 				break;
 			
@@ -106,7 +111,7 @@ int main(int argc, char* argv[]) {
 				if (pos != std::string::npos)
 					value = value.substr(0, pos);
 			
-				CARS = std::stoi(value);
+				cars = std::stoi(value);
 			
 				break;
 			
@@ -118,9 +123,10 @@ int main(int argc, char* argv[]) {
 				if (pos != std::string::npos)
 					value = value.substr(0, pos);
 			
-				DISTANCIAMAX = std::stoi(value);
+				deadline = std::stoi(value);
 			
 				break;
+				
 			case(6) :
 				std::getline(myfile, line);
 				value = line;
@@ -129,7 +135,7 @@ int main(int argc, char* argv[]) {
 				if (pos != std::string::npos)
 					value = value.substr(0, pos);
 			
-				CAPACIDADEMAX = std::stoi(value);
+				maxCapacity = std::stoi(value);
 			
 				break;
 			
@@ -150,26 +156,27 @@ int main(int argc, char* argv[]) {
 
 						switch (i)
 						{
-						case 0:
-							xc = std::stoi(value);
-							XCOORDENADA[lineIdx - 7] = xc;
+							case 0:
+								xc = std::stoi(value);
+								coordenadas[lineIdx - 7].first = xc;
+								
+								break;
 							
-							break;
-						
-						case 1:
-							xc = std::stoi(value);
-							YCOORDENADA[lineIdx - 7] = xc;
-						
-							break;
-						
-						case 2:
-							xc = std::stoi(value);
-							CAPACIDADE[lineIdx - 7] = xc;
-						
-							break;
-						
-						default:
-							break;
+							case 1:
+								xc = std::stoi(value);
+								coordenadas[lineIdx - 7].second = xc;
+							
+								break;
+							
+							case 2:
+								xc = std::stoi(value);
+								capacities[lineIdx - 7] = xc;
+							
+								break;
+							
+							default:
+							
+								break;
 						}
 
 						stringcut = stringcut.substr(pos + 1);
@@ -178,8 +185,8 @@ int main(int argc, char* argv[]) {
 				}  // for (int i = 0; i < 3; i++)
 
 				int v = std::stoi(value);
-				PREMIO[lineIdx - 7] = v;
-				totalpremio += v;
+				prizes[lineIdx - 7] = v;
+				maxFit += v;
 			
 				break;
 			}  // switch (lineIdx)
@@ -187,12 +194,12 @@ int main(int argc, char* argv[]) {
 		
 		myfile.close();
 
-		const long unsigned rngSeed = 0;	// seed to the random number generator
-		MTRand rng(rngSeed);				// initialize the random number generator
-		CtopDecoder decoder;				// initialize the decoder
-		BRKGA< CtopDecoder, MTRand > algorithm(NCLIENTES, p, pe, pm, rhoe, decoder, rng, K, MAXT);
 
-		algorithm.evolve(evolve);
+		rng.seed();  // initialize the random number generator
+		CtopDecoder decoder;	// initialize the decoder
+		BRKGA< CtopDecoder, MTRand > algorithm(clients, p, pe, pm, rhoe, decoder, rng, K, MAXT);
+
+		algorithm.evolve(evols);
 
 		time_t     nowFim = time(0);
 		struct tm  tstructFim;
@@ -201,25 +208,24 @@ int main(int argc, char* argv[]) {
 		strftime(bufFim, sizeof(bufFim), "%Y-%m-%d %X", &tstructFim);
 
 		std::cout << std::endl;
-		std::cout << "INICIO: " << bufInicio << std::endl;
-		std::cout << "FIM: " << bufFim << std::endl;
-		std::cout << "O MELHOR RESULTADO PARA A FUNCAO OBJECTIVO = "
-			<< (totalpremio - algorithm.getBestFitness()) << std::endl;
+		std::cout << "Begins at " << bufInicio << std::endl;
+		std::cout << " Ends at  " << bufFim << std::endl << std::endl;
+		std::cout << "Best fitness = " << (maxFit - algorithm.getBestFitness()) << std::endl << std::endl;
 		
 		std::ofstream output;
 		output.open("resultado.txt", std::fstream::trunc); // remove the content of the output file, and open it
 
-		output << "POPULACAO: " << p << std::endl;
-		output << "EVOLUCOES: " << evolve << std::endl;
-		output << "CLIENTES: " << NCLIENTES << std::endl;
-		output << "VIATURAS: " << CARS << std::endl;
-		output << "DISTANCIAMAX: " << DISTANCIAMAX << std::endl;
-		output << "CAPACIDADEMAX: " << CAPACIDADEMAX << std::endl;
-		output << "MAXPREMIO POSSIVEL: " << totalpremio << std::endl << std::endl;
+		output << "POPULATION: " << p << std::endl;
+		output << "EVOLUTIONS: " << evols << std::endl;
+		output << "CLIENTS: " << clients << std::endl;
+		output << "CARS: " << cars << std::endl;
+		output << "MAX DISTANCE: " << deadline << std::endl;
+		output << "MAX CAPACITY: " << maxCapacity << std::endl;
+		output << "MAX FITNESS: " << maxFit << std::endl << std::endl;
 
 		for (unsigned i = 0; i < bestRoutes.size(); i++) {
 			
-			output << "Rota " << i + 1 << ": ";
+			output << "Route " << i + 1 << ": ";
 			
 			for (unsigned j = 0; j < bestRoutes[i].size(); j++) {
 			
@@ -232,9 +238,9 @@ int main(int argc, char* argv[]) {
 			output << std::endl;
 		}
 		
-		output << "Total Premio: " << totalBest << std::endl << std::endl << std::endl;
-		output << "INICIO: " << bufInicio << std::endl;
-		output << "FIM: " << bufFim << std::endl;
+		output << "Fitness: " << totalBest << std::endl << std::endl;
+		output << "Begins at " << bufInicio << std::endl;
+		output << "Ends at " << bufFim << std::endl;
 		output.close();
 	}
 	else

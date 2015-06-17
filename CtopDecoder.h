@@ -25,16 +25,39 @@
 #include <iostream>
 #include <algorithm>
 
+#include <unistd.h>
+#include <sys/time.h>
+
+#include "MTRand.h"
+
+
+int extern maxCapacity;
+int extern deadline;
+int extern cars;
+int extern maxFit;
+
+MTRand extern rng;
+
+std::vector< std::pair<int, int> > extern coordenadas;
+std::vector<int> extern capacities;
+std::vector<int> extern prizes;
+
+std::mutex extern mutex;
+double extern totalBest;
+std::vector<std::vector<int>> extern bestRoutes;
+
+
 class CtopDecoder {
 public:
-	CtopDecoder();
-	~CtopDecoder();
+	CtopDecoder(void);
+	~CtopDecoder(void);
 
 	double decode(const std::vector< double >& chromosome) const;
 
 private:
-	double calcularDistancia(int x_1, int y_1, int x_2, int y_2) const;
-	int existe(std::vector<int> visitados, int cliente) const;
+	double distance(std::pair<int, int> p1, std::pair<int, int> p2) const;
+	double genRandom(void);
+	int existe(std::vector<int> visited, int cliente) const;
 };
 
 #endif

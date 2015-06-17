@@ -11,7 +11,7 @@ main: $(OBJECTS)
 main.o: main.cpp MTRand.h BRKGA.h
 	$(CPP) $(CFLAGS) -c main.cpp
 
-CtopDecoder.o: CtopDecoder.cpp CtopDecoder.h BRKGA.h
+CtopDecoder.o: CtopDecoder.cpp CtopDecoder.h MTRand.h
 	$(CPP) $(CFLAGS) -c CtopDecoder.cpp
 
 # Remove:

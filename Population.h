@@ -38,7 +38,7 @@ public:
 private:
 	Population(const Population& other);
 	Population(unsigned n, unsigned p);
-	~Population();
+	~Population(void);
 
 	std::vector< std::vector< double > > population;		// Population as vectors of prob.
 	std::vector< std::pair< double, unsigned > > fitness;	// Fitness (double) of a each chromosome
@@ -62,18 +62,19 @@ Population::Population(const unsigned n, const unsigned p) :
 	if(n == 0) { throw std::range_error("Chromosome size n cannot be zero."); }
 }
 
-Population::~Population() {
+Population::~Population(void) {
+	
 }
 
-unsigned Population::getN() const {
+unsigned Population::getN(void) const {
 	return population[0].size();
 }
 
-unsigned Population::getP() const {
+unsigned Population::getP(void) const {
 	return population.size();
 }
 
-double Population::getBestFitness() const {
+double Population::getBestFitness(void) const {
 	return getFitness(0);
 }
 
@@ -94,7 +95,7 @@ void Population::setFitness(unsigned i, double f) {
 	fitness[i].second = i;
 }
 
-void Population::sortFitness() {
+void Population::sortFitness(void) {
 	sort(fitness.begin(), fitness.end());
 }
 
