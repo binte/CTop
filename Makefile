@@ -1,7 +1,7 @@
 # Macros:
 CPP= g++
 CFLAGS= -Wall -Wextra -pedantic -O3 -g -fopenmp -std=c++11
-OBJECTS= main.o CtopDecoder.o
+OBJECTS= main.o CtopDecoder.o Vertice.o
 TARGET= sample
 
 # Targets:
@@ -13,6 +13,9 @@ main.o: main.cpp MTRand.h BRKGA.h
 
 CtopDecoder.o: CtopDecoder.cpp CtopDecoder.h MTRand.h
 	$(CPP) $(CFLAGS) -c CtopDecoder.cpp
+
+Vertice.o : Vertice.cpp Vertice.h
+	$(CPP) $(CFLAGS) -c Vertice.cpp
 
 
 # Remove:

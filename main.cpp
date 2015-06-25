@@ -4,6 +4,7 @@
 #include <string>
 
 #include "CtopDecoder.h"
+#include "Vertice.h"
 #include "MTRand.h"
 #include "BRKGA.h"
 
@@ -16,9 +17,7 @@ double totalBest = 0;
 
 MTRand rng;
 
-std::vector< std::pair<float, float> > coordenadas;
-std::vector<int> capacities;
-std::vector<int> prizes;
+std::vector<Vertice> vertices;
 
 std::mutex mutex;
 std::vector<std::vector<int>> bestRoutes;
@@ -97,9 +96,7 @@ int main(int argc, char* argv[]) {
 					value = value.substr(0, pos);
 			
 				clients = std::stoi(value);
-				coordenadas.reserve(clients);  // allocate space for the coordinates of each vertice/client
-				capacities.reserve(clients);	// allocate space for the capacities of each client
-				prizes.reserve(clients);  // allocate space for the prizes given by reaching each client
+				vertices.reserve(clients);  // allocate space for the vertices, representing the clients
 			
 				break;
 			
@@ -158,19 +155,19 @@ int main(int argc, char* argv[]) {
 						{
 							case 0:
 								xc = std::stoi(value);
-								coordenadas[lineIdx - 7].first = xc;
+								vertices[lineIdx - 7].setX(xc);
 								
 								break;
 							
 							case 1:
 								xc = std::stoi(value);
-								coordenadas[lineIdx - 7].second = xc;
+								vertices[lineIdx - 7].setY(xc);
 							
 								break;
 							
 							case 2:
 								xc = std::stoi(value);
-								capacities[lineIdx - 7] = xc;
+								vertices[lineIdx - 7].setCapacity(xc);
 							
 								break;
 							
@@ -185,7 +182,7 @@ int main(int argc, char* argv[]) {
 				}  // for (int i = 0; i < 3; i++)
 
 				int v = std::stoi(value);
-				prizes[lineIdx - 7] = v;
+				vertices[lineIdx - 7].setScore(v);
 				maxFit += v;
 			
 				break;

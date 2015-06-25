@@ -28,6 +28,7 @@
 #include <unistd.h>
 #include <sys/time.h>
 
+#include "Vertice.h"
 #include "MTRand.h"
 
 
@@ -38,9 +39,7 @@ int extern maxFit;
 
 MTRand extern rng;
 
-std::vector< std::pair<float, float> > extern coordenadas;
-std::vector<int> extern capacities;
-std::vector<int> extern prizes;
+std::vector<Vertice> extern vertices;
 
 std::mutex extern mutex;
 double extern totalBest;

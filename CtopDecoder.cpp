@@ -30,7 +30,7 @@ double CtopDecoder::decode(const std::vector< double >& chromosome) const {
 		
 	/* Sorts the elements in ranking into descending order, based on their gene value */
 	std::sort(ranking.begin(), ranking.end(), greater() );
-
+	
 	
 	// Iterate the cars
 	for (int j = 0; j < cars; j++) {
@@ -56,24 +56,24 @@ double CtopDecoder::decode(const std::vector< double >& chromosome) const {
 			if ( visited.size() == 0 )
 				previous = deposit;
 			else
-				previous = coordenadas[visitedRoutes.back()];
+				previous = vertices[visitedRoutes.back()].getCoord();
 			
-			double dist = distance(previous, coordenadas[client]);
-			double dist2deposit = distance(coordenadas[client], deposit);
+			double dist = distance(previous, vertices[client].getCoord());
+			double dist2deposit = distance(vertices[client].getCoord(), deposit);
 
 			if ( (totalDist + dist) <= (deadline - dist2deposit)			// Condition A
-				&& (sumCapacities + capacities[client]) <= maxCapacity  // Condition B
+				&& (sumCapacities + vertices[client].getCapacity()) <= maxCapacity  // Condition B
 				&& exist(visitedRoutes, client) != 1) {								  // Condition C
 
-					totalDist += dist;										// update the total distance covered by the current car
-					sumCapacities += capacities[client];	// update the total capacity reached by the current car
-					routeFit += prizes[client];						// update the fitness of the current trip
-					visited.push_back(client);						// insert the newly visited client in the current trip
-					visitedRoutes.push_back(client);			// insert the newly visited client in the trip done by al the cars
+					totalDist += dist;																// update the total distance covered by the current car
+					sumCapacities += vertices[client].getCapacity();	// update the total capacity reached by the current car
+					routeFit += vertices[client].getScore();					// update the fitness of the current trip
+					visited.push_back(client);												// insert the newly visited client in the current trip
+					visitedRoutes.push_back(client);									// insert the newly visited client in the trip done by al the cars
 			}
 		}
 
-		totalDist += distance(coordenadas[visitedRoutes.back()], deposit);
+		totalDist += distance(vertices[visitedRoutes.back()].getCoord(), deposit);
 
 		// Insert new route at the tail of the routes vector for this iteration
 		routes.push_back(visited);
