@@ -5,6 +5,7 @@
 
 #include "CtopDecoder.h"
 #include "Vertice.h"
+#include "Clients.h"
 #include "MTRand.h"
 #include "BRKGA.h"
 
@@ -51,7 +52,7 @@ int main(int argc, char* argv[]) {
 	std::ifstream myfile;
 	myfile.open(argv[1]);
 
-	if (myfile.is_open()){
+	if (myfile.is_open()) {
 
 		int lineIdx = 0;
 		
@@ -141,60 +142,44 @@ int main(int argc, char* argv[]) {
 				std::string stringcut = line;
 				value = stringcut;
 
-				for (int i = 0; i < 3; i++) {
-					
-					pos = stringcut.find(";");
-			
-					if (pos != std::string::npos) {
+				Vertice v;
+				v.setID(lineIdx-7);
 
-						int xc = 0;
+				pos = stringcut.find(";");
+				value.replace(pos, value.length(), "");
+				v.setX(std::stof(value));
+				stringcut = stringcut.substr(pos + 1);
+				value = stringcut;
+				
+				pos = stringcut.find(";");								
+				value.replace(pos, value.length(), "");
+				v.setY(std::stof(value));
+				stringcut = stringcut.substr(pos + 1);
+				value = stringcut;
+				
+				pos = stringcut.find(";");
+				value.replace(pos, value.length(), "");				
+				v.setCapacity(std::stoi(value));
+				stringcut = stringcut.substr(pos + 1);
+				value = stringcut;
+			  
+				v.setScore(std::stoi(value));
+				maxFit += v.getScore();
+				
+				vertices.push_back(v);
+			}
 
-						value.replace(pos, value.length(), "");
-
-						switch (i)
-						{
-							case 0:
-								xc = std::stoi(value);
-								vertices[lineIdx - 7].setX(xc);
-								
-								break;
-							
-							case 1:
-								xc = std::stoi(value);
-								vertices[lineIdx - 7].setY(xc);
-							
-								break;
-							
-							case 2:
-								xc = std::stoi(value);
-								vertices[lineIdx - 7].setCapacity(xc);
-							
-								break;
-							
-							default:
-							
-								break;
-						}
-
-						stringcut = stringcut.substr(pos + 1);
-						value = stringcut;
-					}  // if (pos != std::string::npos)
-				}  // for (int i = 0; i < 3; i++)
-
-				int v = std::stoi(value);
-				vertices[lineIdx - 7].setScore(v);
-				maxFit += v;
-			
-				break;
-			}  // switch (lineIdx)
 		}  // while (!myfile.eof())
-		
+
+		int filtered = Clients::filter();  // filter vertices that cannot be taken		
+
 		myfile.close();
 
-
 		rng.seed();  // initialize the random number generator
+
 		CtopDecoder decoder;	// initialize the decoder
-		BRKGA< CtopDecoder, MTRand > algorithm(clients, p, pe, pm, rhoe, decoder, rng, K, MAXT);
+
+		BRKGA< CtopDecoder, MTRand > algorithm(clients-filtered, p, pe, pm, rhoe, decoder, rng, K, MAXT);
 
 		algorithm.evolve(evols);
 

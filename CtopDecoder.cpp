@@ -1,9 +1,3 @@
-#include <iostream>
-#include <sstream>  
-#include <fstream>
-#include <string>
-#include <ctime>
-
 #include "CtopDecoder.h"
 
 
@@ -15,7 +9,6 @@ double CtopDecoder::decode(const std::vector< double >& chromosome) const {
 	
 	double fitAllRoutes = 0;
 	std::vector<int> visitedRoutes;  // vector that contains the clients visited in all car routes
-	std::pair<int,int> deposit = std::make_pair(35,35);
 	
 	/* Declare ranking as a vector of pairs (double, unsigned) with size chromosome.size() */
 	std::vector< std::pair< double, unsigned > > ranking(chromosome.size());
@@ -54,16 +47,16 @@ double CtopDecoder::decode(const std::vector< double >& chromosome) const {
 			std::pair <int,int> previous;
 			
 			if ( visited.size() == 0 )
-				previous = deposit;
+				previous = Clients::getDeposit();
 			else
 				previous = vertices[visitedRoutes.back()].getCoord();
 			
-			double dist = distance(previous, vertices[client].getCoord());
-			double dist2deposit = distance(vertices[client].getCoord(), deposit);
+			double dist = Clients::distance(previous, vertices[client].getCoord());
+			double dist2deposit = Clients::distance(vertices[client].getCoord(), Clients::getDeposit());
 
-			if ( (totalDist + dist) <= (deadline - dist2deposit)			// Condition A
+			if ( (totalDist + dist) <= (deadline - dist2deposit)									// Condition A
 				&& (sumCapacities + vertices[client].getCapacity()) <= maxCapacity  // Condition B
-				&& exist(visitedRoutes, client) != 1) {								  // Condition C
+				&& exist(visitedRoutes, client) != 1) {								  						// Condition C
 
 					totalDist += dist;																// update the total distance covered by the current car
 					sumCapacities += vertices[client].getCapacity();	// update the total capacity reached by the current car
@@ -73,7 +66,7 @@ double CtopDecoder::decode(const std::vector< double >& chromosome) const {
 			}
 		}
 
-		totalDist += distance(vertices[visitedRoutes.back()].getCoord(), deposit);
+		totalDist += Clients::distance(vertices[visitedRoutes.back()].getCoord(), Clients::getDeposit());
 
 		// Insert new route at the tail of the routes vector for this iteration
 		routes.push_back(visited);
@@ -113,12 +106,6 @@ double CtopDecoder::decode(const std::vector< double >& chromosome) const {
 	mutex.unlock();
 
 	return maxFit - fitAllRoutes;
-}
-
-/* Calculate the euclidean distance between two points */
-double CtopDecoder::distance(std::pair<int, int> p1, std::pair<int, int> p2) const {
-	
-	return sqrt(pow((p1.first - p2.first), 2) + pow((p1.second - p2.second), 2));
 }
 
 /* Checks if a client has been visited */
