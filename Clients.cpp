@@ -41,4 +41,30 @@ namespace Clients {
 		
 		return sqrt(pow((p1.first - p2.first), 2) + pow((p1.second - p2.second), 2));
 	}
+
+
+	/* Returns the new distance of the trip, with the newly inserted vertice in a given position */
+	double calc_new_vertice(std::vector<int> viagem, int topPriorityGene, unsigned pos, double prev_time) {
+	
+		double new_distance;		
+		
+		if(viagem.size() == 0)
+			new_distance = distance(deposit, vertices.at(topPriorityGene).getCoord()) + distance(vertices.at(topPriorityGene).getCoord(), deposit);
+		else
+			if(pos == 0)
+				new_distance = prev_time - distance(deposit, vertices.at(viagem.at(pos)).getCoord())
+								 		 + distance(deposit, vertices.at(topPriorityGene).getCoord())
+								 		 + distance(vertices.at(topPriorityGene).getCoord(), vertices.at(viagem.at(pos)).getCoord());
+			else
+				if (pos == viagem.size())
+					new_distance = prev_time - distance(vertices.at(viagem.at(viagem.size() - 1)).getCoord(), deposit) 
+									 		 + distance(vertices.at(viagem.at(viagem.size() - 1)).getCoord(), vertices.at(topPriorityGene).getCoord())
+									 		 + distance(vertices.at(topPriorityGene).getCoord(), deposit);
+				else
+					new_distance = prev_time - distance(vertices.at(viagem.at(pos-1)).getCoord(), vertices.at(viagem.at(pos)).getCoord())
+									 		 + distance(vertices.at(viagem.at(pos-1)).getCoord(), vertices.at(topPriorityGene).getCoord())
+									 		 + distance(vertices.at(topPriorityGene).getCoord(), vertices.at(viagem.at(pos)).getCoord());
+		
+		return new_distance;
+	}
 }

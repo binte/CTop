@@ -317,6 +317,7 @@ inline void BRKGA< Decoder, RNG >::evolution(Population& curr, Population& next)
 	#endif
 	for(int i = int(pe); i < int(p); ++i) {
 		next.setFitness( i, refDecoder.decode(next.population[i]) );
+		std::cout << "passou" << std::endl;
 	}
 
 	// Now we must sort 'current' by fitness, since things might have changed:
