@@ -36,6 +36,7 @@ int main(int argc, char* argv[]) {
 	int p = 0;
 	int evols = 0;
 	int clients = 0;
+	bool found = false;
 	time_t     inicio = time(0);
 	struct tm  tstructInicio;
 	char       bufInicio[80];
@@ -56,7 +57,7 @@ int main(int argc, char* argv[]) {
 
 		int lineIdx = 0;
 		
-		while (!myfile.eof()) {
+		while (!myfile.eof()) {  // iterate over the contents of the file line by line
 
 			lineIdx++;
 			std::string value;
@@ -64,7 +65,7 @@ int main(int argc, char* argv[]) {
 
 			switch (lineIdx)
 			{
-			case(1) :
+			case(1) :  // line 1 (population size)
 				std::getline(myfile, line);
 				value = line;
 				pos = value.find(";");
@@ -76,7 +77,7 @@ int main(int argc, char* argv[]) {
 				
 				break;
 			
-			case(2) :
+			case(2) :  // line 2 (number of evolutions)
 				std::getline(myfile, line);
 				value = line;
 				pos = value.find(";");
@@ -88,7 +89,7 @@ int main(int argc, char* argv[]) {
 			
 				break;
 			
-			case(3) :
+			case(3) :  // line 3 (number of vertices)
 				std::getline(myfile, line);
 				value = line;
 				pos = value.find(";");
@@ -101,7 +102,7 @@ int main(int argc, char* argv[]) {
 			
 				break;
 			
-			case(4) :
+			case(4) :  // line 4 (number of cars)
 				std::getline(myfile, line);
 				value = line;
 				pos = value.find(";");
@@ -113,7 +114,7 @@ int main(int argc, char* argv[]) {
 			
 				break;
 			
-			case(5) :
+			case(5) :  // line 5 (maximum time taken during each car trip)
 				std::getline(myfile, line);
 				value = line;
 				pos = value.find(";");
@@ -125,7 +126,7 @@ int main(int argc, char* argv[]) {
 			
 				break;
 				
-			case(6) :
+			case(6) :  // line 6 (maximum car capacity)
 				std::getline(myfile, line);
 				value = line;
 				pos = value.find(";");
@@ -137,7 +138,7 @@ int main(int argc, char* argv[]) {
 			
 				break;
 			
-			default:
+			default:  // line 7 and beyond (vertices)
 				std::getline(myfile, line);
 				std::string stringcut = line;
 				value = stringcut;
@@ -175,13 +176,18 @@ int main(int argc, char* argv[]) {
 
 		myfile.close();
 
-		rng.seed();  // initialize the random number generator
+		rng.seed();  // initialise the random number generator
 
-		CtopDecoder decoder;	// initialize the decoder
+		CtopDecoder decoder;	// initialise the decoder
 
-		BRKGA< CtopDecoder, MTRand > algorithm(clients-filtered, p, pe, pm, rhoe, decoder, rng, K, MAXT);
+		BRKGA< CtopDecoder, MTRand > genAlg(clients-filtered, p, pe, pm, rhoe, decoder, rng, K, MAXT); // initialise the genetic algorithm
+		
+		for(unsigned i = 0; i < genAlg.getK(); i++)  // check if the best route has already been found
+			if( genAlg.getBestFitness() == 0 )
+				found = true;
 
-		algorithm.evolve(evols);
+		if (!found)  // If the best route has not been found during the initialisation (...)
+			genAlg.evolve(evols);  // (...) do the evolutions
 
 		time_t     nowFim = time(0);
 		struct tm  tstructFim;
@@ -192,7 +198,7 @@ int main(int argc, char* argv[]) {
 		std::cout << std::endl;
 		std::cout << "Begins at " << bufInicio << std::endl;
 		std::cout << " Ends at  " << bufFim << std::endl << std::endl;
-		std::cout << "Best fitness = " << (maxFit - algorithm.getBestFitness()) << std::endl << std::endl;
+		std::cout << "Best fitness = " << (maxFit - genAlg.getBestFitness()) << std::endl << std::endl;
 		
 		std::ofstream output;
 		output.open("resultado.txt", std::fstream::trunc); // remove the content of the output file, and open it

@@ -217,10 +217,15 @@ void BRKGA< Decoder, RNG >::evolve(unsigned generations) {
 	if(generations == 0) { throw std::range_error("Cannot evolve for 0 generations."); }
 
 	for(unsigned i = 0; i < generations; ++i) {
+
 		for(unsigned j = 0; j < K; ++j) {
 			evolution(*current[j], *previous[j]);	// First evolve the population (curr, next)
+				
 			std::swap(current[j], previous[j]);		// Update (prev = curr; curr = prev == next)
 		}
+		
+		if( getBestFitness() == 0 )  // Stop when the best fitness is found
+			break;
 	}
 }
 
@@ -317,7 +322,6 @@ inline void BRKGA< Decoder, RNG >::evolution(Population& curr, Population& next)
 	#endif
 	for(int i = int(pe); i < int(p); ++i) {
 		next.setFitness( i, refDecoder.decode(next.population[i]) );
-		std::cout << "passou" << std::endl;
 	}
 
 	// Now we must sort 'current' by fitness, since things might have changed:

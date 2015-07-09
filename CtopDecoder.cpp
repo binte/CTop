@@ -13,7 +13,7 @@ double CtopDecoder::decode(const std::vector< double >& chromosome) const {
 	MTRand r;
 	std::vector<int> blackList;  // indexes of the discarded genes during a trip
 	std::vector<int> auxblackList;  // indexes (within blackList) of the high priority genes that can't be taken
-	std::vector<int> viagens; // visited genes
+	std::vector<int> trips; // visited genes
 	std::vector<int> minValues;  // indexes of the high priority genes
 	std::vector<std::vector<int>> routes(cars); 	// contains the routes for each iteration, including visiting the deposits
 	std::vector<int> times(cars);  // current duration of each of the routes
@@ -39,10 +39,10 @@ double CtopDecoder::decode(const std::vector< double >& chromosome) const {
 				-> Escolher os vértices de maior prioridade
 				-> Aleatoriamente ir escolhendo um desses vértices, até um encaixar numa viagem, ou até todos terem sido percorridos							
 		*/
-		while( !fl && blackList.size() + viagens.size() < ranking.size() ) {
+		while( !fl && blackList.size() + trips.size() < ranking.size() ) {
   
 			//std::cout << "blackList.size(): " << blackList.size() << std::endl;
-			//std::cout << "viagens.size(): " << viagens.size() << std::endl;
+			//std::cout << "trips.size(): " << trips.size() << std::endl;
 			//std::cout << "ranking.size(): " << ranking.size() << std::endl;
 
 			unsigned ind_min=0;
@@ -51,7 +51,7 @@ double CtopDecoder::decode(const std::vector< double >& chromosome) const {
 
 			// Find the gene with the highest priority that is neither visited nor blacklisted (...)
 			while (std::find(blackList.begin(), blackList.end(), ranking.at(ind_min).second) != blackList.end() || 
-				  	 std::find(viagens.begin(), viagens.end(), ranking.at(ind_min).second) != viagens.end() )
+				  	 std::find(trips.begin(), trips.end(), ranking.at(ind_min).second) != trips.end() )
 				ind_min++;
 
 			// (...) and save its index
@@ -65,20 +65,20 @@ double CtopDecoder::decode(const std::vector< double >& chromosome) const {
 			
 				for ( ; ranking.at(ind_min).first == min; ind_min++) {
 				
-					if( std::find(viagens.begin(), viagens.end(), ranking.at(ind_min).second) != viagens.end() || 
+					if( std::find(trips.begin(), trips.end(), ranking.at(ind_min).second) != trips.end() || 
 					  	std::find(blackList.begin(), blackList.end(), ranking.at(ind_min).second) != blackList.end() )
 						minValues.push_back(ranking.at(ind_min).second);  // if the vertice is neither marked to be visited, nor blacklisted, add its index in the minimum values list
 				}
 			}
 			
-			// se existirem vários genes com o mesmo valor (máximo)
+			// if there are several genes with the same (maximum) value
 			if(minValues.size() > 1) {
 
-				// escolher um gene de forma aleatória
+				// chose a gene randomly
 				random = r.randInt(minValues.size());
 				topPriorityGene = minValues.at(random);
 			}
-			else { // se apenas existir um gene com o valor máximo
+			else { // if there's only one gene with the maximum value
 				
 				topPriorityGene = minValues.at(0);
 				random = 0;
@@ -202,7 +202,7 @@ double CtopDecoder::decode(const std::vector< double >& chromosome) const {
 			minValues.clear();
 			minValues.shrink_to_fit();
 			
-		}  //	while( !fl && blackList.size() + viagens.size() < ranking.size() )
+		}  //	while( !fl && blackList.size() + trips.size() < ranking.size() )
   
 		
 		/* Clear the contents of the blackList, so that this structure is empty in the next cycle iteration */  
@@ -234,11 +234,11 @@ double CtopDecoder::decode(const std::vector< double >& chromosome) const {
 			routes.at(trip).push_back(prev);
   
 
-			// atualizar array viagens com o novo gene, sendo que é descurada a ordenação
-			viagens.push_back(topPriorityGene);
+			// atualizar array trips com o novo gene, sendo que é descurada a ordenação
+			trips.push_back(topPriorityGene);
 
 			// atualizar o peso do alelo
-			// topInd(ranking).setAllele(topPriorityGene, viagens.size());
+			// topInd(ranking).setAllele(topPriorityGene, trips.size());
   
 			// mudar o valor da flag que assinala a escolha dum gene para colocar na viagem para recomeçar novo processo
 			fl = false;
@@ -248,8 +248,8 @@ double CtopDecoder::decode(const std::vector< double >& chromosome) const {
 		std::cout << "SCORE: " + vertices.at(topPriorityGene).getScore() << std::endl;
   	
 		std::cout << "--------------- VIAGENS ---------------" << std::endl;
-		for (unsigned h=0 ; h < viagens.size() ; h++)
-			std::cout << "indice " << h << ": " << viagens.at(h) << std::endl;
+		for (unsigned h=0 ; h < trips.size() ; h++)
+			std::cout << "indice " << h << ": " << trips.at(h) << std::endl;
 		std::cout << "---------------------------------------" << std::endl;
 		getchar();
 			mutex.unlock();
