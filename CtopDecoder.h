@@ -68,7 +68,8 @@ public:
 	double decode(const std::vector< double >& chromosome) const;
 
 private:
-	int exist(std::vector<int> visited, int cliente) const;
+	int exist(std::vector<int> visited, int client) const;
+	std::tuple<int, int, double> where2insert(int topPriorityGene, std::vector<std::vector<int>> routes, std::vector<double> times) const;
 };
 
 #endif

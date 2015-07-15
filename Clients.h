@@ -15,7 +15,7 @@ namespace Clients {
 	
 	int filter();
 	double distance(std::pair<int, int> p1, std::pair<int, int> p2);
-	double calc_new_vertice(std::vector<int> viagem, int topPriorityGene, unsigned pos, double prev_time);
+	double addedTime(std::vector<int> viagem, int topPriorityGene, unsigned pos);
 }
 
 #endif

@@ -7,16 +7,17 @@ CtopDecoder::~CtopDecoder() {}
 
 double CtopDecoder::decode(const std::vector< double >& chromosome) const {
 	
-	int random, topPriorityGene = -1, trip = -1, pos = -1, counter;  // counter: number of positions to ignore, due to blacklisting
+	int random, topPriorityGene = -1, counter;  // counter: number of positions to ignore, due to blacklisting
 	bool flag = true, fl = false;  // fl flags the choice of a gene, and flag indicates if it's possible to insert more vertices
-	double fitness = 0, min_dist = 0;
+	double fitness = 0;
+	std::tuple<int, int, double> data2change;
 	MTRand r;
 	std::vector<int> blackList;  // indexes of the discarded genes during a trip
 	std::vector<int> auxblackList;  // indexes (within blackList) of the high priority genes that can't be taken
 	std::vector<int> trips; // visited genes
 	std::vector<int> minValues;  // indexes of the high priority genes
 	std::vector<std::vector<int>> routes(cars); 	// contains the routes for each iteration, including visiting the deposits
-	std::vector<int> times(cars);  // current duration of each of the routes
+	std::vector<double> times(cars);  // current duration of each of the routes
 	
 	r.seed();  // initialize the random number generator
 	
@@ -67,7 +68,8 @@ double CtopDecoder::decode(const std::vector< double >& chromosome) const {
 				
 					if( std::find(trips.begin(), trips.end(), ranking.at(ind_min).second) != trips.end() || 
 					  	std::find(blackList.begin(), blackList.end(), ranking.at(ind_min).second) != blackList.end() )
-						minValues.push_back(ranking.at(ind_min).second);  // if the vertice is neither marked to be visited, nor blacklisted, add its index in the minimum values list
+						minValues.push_back(ranking.at(ind_min).second);  /* if the vertice is neither marked to be visited, nor blacklisted, 
+																																add its index in the minimum values list */
 				}
 			}
 			
@@ -84,44 +86,16 @@ double CtopDecoder::decode(const std::vector< double >& chromosome) const {
 				random = 0;
 			}
 			
-  
-			// variável auxiliar utilizada para guardar a distância mínima calculada ao iterar o próximo ciclo 
-			min_dist = deadline + 1;
-  
-			// variável auxiliar utilizada para guardar a viagem na qual ocorreu a distância mínima
-			trip = -1;
-  
-			// variável auxiliar utilizada para guardar a posição da viagem na qual ocorreu a distância mínima
-			pos = -1;
-  
-
-			/*
-			 * Ciclo utilizado para implementar a segunda restrição, que impôe que o vértice escolhido para 
-			 * entrar nas viagens vai ser colocado no local que mais favorece a viagem. O ciclo externo itera
-			 * as viagens e o interno itera as posições de cada viagem.  
-			 */
-			for(int j=0; j<cars; j++) {
-  
-				//std::cout << "routes.at(j).size(): " << routes.at(j).size() << std::endl;
-				//getchar();
-
-					for(unsigned i=0 ; i<routes.at(j).size() + 1 ; i++) {
-  
-						double aux = Clients::calc_new_vertice(routes.at(j), topPriorityGene, i, times.at(j));
-  
-						//std::cout << "topPriorityGene: " << topPriorityGene << "\ntimes.get(j): "<< times.at(j) << "\ncalculated: " << aux << "\nmin_dist: " << min_dist << std::endl;
-  
-						if( aux <= deadline && aux < min_dist ) {
-          	
-							min_dist = aux;
-							trip = j;
-							pos = i;
-						}
-				}
-			}
+			/* Tuple with the data necessary to update the selected routes at the end of an iteration of the decoder 
+			
+					1st position: car
+					2nd position: position of the car's trip
+					3rd position: new distance od the trip
+			*/
+			data2change = data2change = where2insert(topPriorityGene, routes, times);
 
 			 // se o gene escolhido couber numa rota
-	    if (pos != -1)
+	    if ( std::get<1>(data2change) != -1 )
 				fl = true;  // indicar a escolha dum gene
 			else {
   
@@ -159,35 +133,39 @@ double CtopDecoder::decode(const std::vector< double >& chromosome) const {
 					topPriorityGene = minValues.at(random + counter);	// guardar o índice do novo gene escolhido aleatoriamente
 					// std::cout << "TOP PRIORITY GENE: " << topPriorityGene << std::endl;
   
-  
-					min_dist = deadline + 1;
+/*  
+					min_add = deadline + 1;
 					trip = -1;
-					pos = -1;			
+					pos = -1;
+					new_dist = -1;	
+*/  
   
-  
+					data2change = where2insert(topPriorityGene, routes, times);
 					/*
 					 * Ciclo utilizado para implementar a segunda restrição, que impôe que o vértice escolhido para 
 					 * entrar nas viagens vai ser colocado no local que mais favorece a viagem. O ciclo externo itera
 					 * as viagens e o interno itera as posições de cada viagem.  
 					 */
-					for(int j=0 ; j<cars ; j++) {
+/*					for(int j=0 ; j<cars ; j++) {
   
 						for(unsigned i=0 ; i<routes.at(j).size() + 1 ; i++) {
   
-							double aux = Clients::calc_new_vertice(routes.at(j), topPriorityGene, i, times.at(j));
-		//System.out.println("topPriorityGene: " + topPriorityGene + "\ntimes.at(j): " + times.at(j) + "\ncalculated: " + aux);
+						// extra distance covered by the car due to the insertion of topPriorityGene
+							double  add = Clients::addedTime(routes.at(j), topPriorityGene, i);
+							double n = times.at(j) + add;  // new distance covered by the car, with the insertion of the topPriorityGene
   
-							if( aux <= deadline && aux <= min_dist ) {
-  
-								min_dist = aux;
-								trip = j;
-								pos = i;
+							if( n <= deadline && add < min_add ) {
+              
+								min_add = add;
+								std::get<0>(data2change) = j;
+								std::get<1>(data2change) = i;
+								std::get<2>(data2change) = n;
 							}
 						}
 					}
-  
+ */
 					// se o gene escolhido couber numa rota
-			    if (pos != -1)							
+			    if (std::get<1>(data2change) != -1)							
 						fl = true;  // assinalar a escolha dum gene	
 				}  // for(unsigned k=0 ; !fl && (k+1)<minValues.size() ; k++)
   
@@ -215,23 +193,24 @@ double CtopDecoder::decode(const std::vector< double >& chromosome) const {
 	// se um gene tiver sido seleccionado para ser colocado na viagem
 		if(fl) {
 
-	//System.out.println("times.size(): " + times.size() + "\ntrip: " + trip + "\nmin_dist: " + min_dist);
+	//System.out.println("times.size(): " + times.size() + "\ntrip: " + trip + "\nmin_add: " + min_add);
+	
+			times.at( std::get<0>(data2change) ) = std::get<2>(data2change); // update times with the new duration of the route		
+
+			int prev = topPriorityGene; 	// update routes with the new selected vertice to be visited (step 1)
+//std::cout << "pos: " << pos << std::endl;  
+
+			// update routes with the new selected vertice to be visited (step 2)
+			for(unsigned j=std::get<1>(data2change) ; j<routes.at(std::get<0>(data2change)).size() ; j++) {
   
-			times.at(trip) = min_dist; //atualizar a variável times com o novo tempo de duração da rota
+				int next = routes.at(std::get<0>(data2change)).at(j);
   
-			int prev = topPriorityGene;
-  
-			// atualizar rotas com o novo gene
-			for(unsigned j=pos ; j<routes.at(trip).size() ; j++) {
-  
-				int next = routes.at(trip).at(j);
-  
-				routes.at(trip).at(j) = prev;
+				routes.at(std::get<0>(data2change)).at(j) = prev;
 				prev = next;
 			}
   
-			// terminar de atualizar array routes com o novo gene
-			routes.at(trip).push_back(prev);
+			// update routes with the new selected vertice to be visited (step 3)
+			routes.at(std::get<0>(data2change)).push_back(prev);
   
 
 			// atualizar array trips com o novo gene, sendo que é descurada a ordenação
@@ -242,23 +221,36 @@ double CtopDecoder::decode(const std::vector< double >& chromosome) const {
   
 			// mudar o valor da flag que assinala a escolha dum gene para colocar na viagem para recomeçar novo processo
 			fl = false;
-  /*
-			mutex.lock();	
+  
+/*		mutex.lock();	
 		std::cout << "top priority gene: " << topPriorityGene << std::endl;
 		std::cout << "SCORE: " + vertices.at(topPriorityGene).getScore() << std::endl;
   	
 		std::cout << "--------------- VIAGENS ---------------" << std::endl;
-		for (unsigned h=0 ; h < trips.size() ; h++)
-			std::cout << "indice " << h << ": " << trips.at(h) << std::endl;
-		std::cout << "---------------------------------------" << std::endl;
+		for (unsigned i = 0; i < routes.size(); i++) {
+			
+			std::cout << "Route " << i << ": ";
+			
+			for (unsigned j = 0; j < routes[i].size(); j++) {
+			
+				std::cout << (routes[i][j]);
+			
+				if (j != routes[i].size() - 1)
+					std::cout << "->";
+			}
+			
+			std::cout << std::endl;
+		}
 		getchar();
-			mutex.unlock();
-  */
+		mutex.unlock(); */
+  
 			// atualiza o valor do fitness
 			fitness += vertices.at(topPriorityGene).getScore();
 		}
 		else  // caso contrário (se nenhum dos vértices de alta prioridade couber no fim da viagem)
 			flag = false;  // atualizar a flag para sair do ciclo
+	
+
 			
 	}  // while(flag)
 
@@ -304,4 +296,61 @@ int CtopDecoder::exist(std::vector<int> visited, int client) const {
 			return 1;
 	
 	return 0;
+}
+
+/* The chosen vertice (topPriorityGene) will be inserted in the place that favours the routes the most. An example is given below.
+ * 
+ * Consider the vertice 4 has been chosen to be inserted in a trip, 
+ * and that we have two cars, having at the moment the following trips: 
+ * 
+ * Trip 1 : O -> 3 -> D (time: 5)
+ * Trip 2 : O -> D (time: 0)
+ * 
+ * Its insertion will be attempted in all the positions, like explained below: 
+ * 
+ * Trip 1'  : Origin -> 4 -> 3 -> Destination (time: 6)
+ * Trip 1'' : Origin -> 3 -> 4 -> Destination (time: 7)
+ * Trip 2'  : Origin -> 4 -> Destination (time: 5)
+ * 
+ * Although the trip 2' is the shortest, the algorithm will choose the trip 1', because the time added to the trip is shorter:
+ * 
+ * 					time_added(trip 1') < time_added(trip 1'') < time_added(trip 2')
+ */
+std::tuple<int, int, double> CtopDecoder::where2insert(int topPriorityGene, std::vector<std::vector<int>> routes, 
+																																						std::vector<double> times) const {
+
+	int min_add = deadline + 1;	// stores the minimum distance added to the route with the insertion of one vertice
+	std::tuple<int, int, double> data2change = std::make_tuple(-1, -1, -1);
+
+	/* O ciclo externo itera as viagens e o interno itera as posições de cada viagem */
+	for(int j=0; j<cars; j++) {
+  
+	/*				std::cout << "-------------------------------------" << std::endl;
+		std::cout << "j: " << j << "   routes[j].size(): " << routes.at(j).size() << "\ntopPriorityGene: " 
+									<< topPriorityGene << "\ntimes.at(j): " << times.at(j) << std::endl;
+	*/
+			for(unsigned i=0 ; i<routes.at(j).size() + 1 ; i++) {
+  
+				/* extra distance covered by the car due to the insertion of topPriorityGene */
+				double  add = Clients::addedTime(routes.at(j), topPriorityGene, i);  				
+				double n = times.at(j) + add;  // new distance covered by the car, with the insertion of the topPriorityGene
+  
+		//						std::cout << "\nn: " << n << "\nadded: " << add << std::endl << std::endl;
+  
+				/* In order to change the insertion algorithm, so that a new vertice is inserted in a route's position 
+				so that the chosen route will have the smallest time among all the routes, 
+				the 'add' variable shall be replaced by the 'n' variable */
+				if( n <= deadline && add < min_add ) { 
+  
+					min_add = add;
+					std::get<0>(data2change) = j;
+					std::get<1>(data2change) = i;
+					std::get<2>(data2change) = n;
+				}
+		}
+  
+		//				std::cout << "-------------------------------------" << std::endl;
+	}
+	
+	return data2change;
 }
