@@ -61,15 +61,25 @@ struct greater
 
 
 class CtopDecoder {
+	
+private:
+	std::pair<float,float> origin;
+	std::pair<float,float> deposit;
+		
+	int exist(std::vector<int> visited, int client) const;
+	std::tuple<int, int, double> where2insert(int topPriorityGene, std::vector<std::vector<int>> routes, 
+																						std::vector<double> times) const;
+
 public:
 	CtopDecoder(void);
 	~CtopDecoder(void);
 
-	double decode(const std::vector< double >& chromosome) const;
+	void setOrigin(std::pair<float,float> origin);
+	void setDeposit(std::pair<float,float> deposit);
+	std::pair<float,float> getOrigin(void);
+	std::pair<float,float> getDeposit(void);
 
-private:
-	int exist(std::vector<int> visited, int client) const;
-	std::tuple<int, int, double> where2insert(int topPriorityGene, std::vector<std::vector<int>> routes, std::vector<double> times) const;
+	double decode(const std::vector< double >& chromosome) const;
 };
 
 #endif

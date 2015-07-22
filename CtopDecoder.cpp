@@ -5,6 +5,27 @@ CtopDecoder::CtopDecoder() {}
 CtopDecoder::~CtopDecoder() {}
 
 
+void CtopDecoder::setOrigin(std::pair<float,float> origin) {
+	
+	this->origin = origin;
+}
+
+void CtopDecoder::setDeposit(std::pair<float,float> deposit) {
+	
+	this->deposit = deposit;
+}
+
+std::pair<float,float> CtopDecoder::getOrigin(void) {
+	
+	return origin;
+}
+
+std::pair<float,float> CtopDecoder::getDeposit(void) {
+	
+	return deposit;
+}
+
+
 double CtopDecoder::decode(const std::vector< double >& chromosome) const {
 	
 	int random, topPriorityGene = -1, counter;  // counter: number of positions to ignore, due to blacklisting
@@ -116,10 +137,10 @@ double CtopDecoder::decode(const std::vector< double >& chromosome) const {
   				// std::cout << "minValues.size: " << minValues.size() << std::endl;
 					blackList.push_back(minValues.at(random + counter));
 
-					// escolher novo gene com prioridade máxima, de forma aleatória
+					// choose new gene with high priority, randomly
 					random = r.randInt(minValues.size() - (k+1));
 
-					// ordenar os arrays blackList e auxblackList
+					// order the blackList and auxblackList arrays
 					std::sort(auxblackList.begin(), auxblackList.end());
 					std::sort(blackList.begin(), blackList.end());
 
@@ -141,29 +162,7 @@ double CtopDecoder::decode(const std::vector< double >& chromosome) const {
 */  
   
 					data2change = where2insert(topPriorityGene, routes, times);
-					/*
-					 * Ciclo utilizado para implementar a segunda restrição, que impôe que o vértice escolhido para 
-					 * entrar nas viagens vai ser colocado no local que mais favorece a viagem. O ciclo externo itera
-					 * as viagens e o interno itera as posições de cada viagem.  
-					 */
-/*					for(int j=0 ; j<cars ; j++) {
-  
-						for(unsigned i=0 ; i<routes.at(j).size() + 1 ; i++) {
-  
-						// extra distance covered by the car due to the insertion of topPriorityGene
-							double  add = Clients::addedTime(routes.at(j), topPriorityGene, i);
-							double n = times.at(j) + add;  // new distance covered by the car, with the insertion of the topPriorityGene
-  
-							if( n <= deadline && add < min_add ) {
-              
-								min_add = add;
-								std::get<0>(data2change) = j;
-								std::get<1>(data2change) = i;
-								std::get<2>(data2change) = n;
-							}
-						}
-					}
- */
+
 					// se o gene escolhido couber numa rota
 			    if (std::get<1>(data2change) != -1)							
 						fl = true;  // assinalar a escolha dum gene	
@@ -226,7 +225,7 @@ double CtopDecoder::decode(const std::vector< double >& chromosome) const {
 		std::cout << "top priority gene: " << topPriorityGene << std::endl;
 		std::cout << "SCORE: " + vertices.at(topPriorityGene).getScore() << std::endl;
   	
-		std::cout << "--------------- VIAGENS ---------------" << std::endl;
+		std::cout << "--------------- TRIPS ---------------" << std::endl;
 		for (unsigned i = 0; i < routes.size(); i++) {
 			
 			std::cout << "Route " << i << ": ";
@@ -317,7 +316,7 @@ int CtopDecoder::exist(std::vector<int> visited, int client) const {
  * 					time_added(trip 1') < time_added(trip 1'') < time_added(trip 2')
  */
 std::tuple<int, int, double> CtopDecoder::where2insert(int topPriorityGene, std::vector<std::vector<int>> routes, 
-																																						std::vector<double> times) const {
+																											 std::vector<double> times) const {
 
 	int min_add = deadline + 1;	// stores the minimum distance added to the route with the insertion of one vertice
 	std::tuple<int, int, double> data2change = std::make_tuple(-1, -1, -1);
@@ -332,17 +331,17 @@ std::tuple<int, int, double> CtopDecoder::where2insert(int topPriorityGene, std:
 			for(unsigned i=0 ; i<routes.at(j).size() + 1 ; i++) {
   
 				/* extra distance covered by the car due to the insertion of topPriorityGene */
-				double  add = Clients::addedTime(routes.at(j), topPriorityGene, i);  				
+				double add = Clients::addedTime(routes.at(j), topPriorityGene, i, origin, deposit);  				
 				double n = times.at(j) + add;  // new distance covered by the car, with the insertion of the topPriorityGene
   
 		//						std::cout << "\nn: " << n << "\nadded: " << add << std::endl << std::endl;
   
 				/* In order to change the insertion algorithm, so that a new vertice is inserted in a route's position 
 				so that the chosen route will have the smallest time among all the routes, 
-				the 'add' variable shall be replaced by the 'n' variable */
-				if( n <= deadline && add < min_add ) { 
+				the 'add' variable shall be replaced by the 'n' variable (in two places) */
+				if( n <= deadline && n < min_add ) { 
   
-					min_add = add;
+					min_add = n;
 					std::get<0>(data2change) = j;
 					std::get<1>(data2change) = i;
 					std::get<2>(data2change) = n;

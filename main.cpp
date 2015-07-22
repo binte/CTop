@@ -49,7 +49,11 @@ int main(int argc, char* argv[]) {
 	const unsigned K = 3;		// number of independent populations 3
 	const unsigned MAXT = 4;	// number of threads for parallel decoding 2
 
+	double x, y;
 	std::string line;
+	std::string stringcut;
+	CtopDecoder decoder;	// initialise the decoder
+	
 	std::ifstream myfile;
 	myfile.open(argv[1]);
 
@@ -65,120 +69,153 @@ int main(int argc, char* argv[]) {
 
 			switch (lineIdx)
 			{
-			case(1) :  // line 1 (population size)
-				std::getline(myfile, line);
-				value = line;
-				pos = value.find(";");
-			
-				if (pos != std::string::npos)
-					value = value.substr(0, pos);
-			
-				p = std::stoi(value);
+				case(1) :  // line 1 (population size)
+					std::getline(myfile, line);
+					value = line;
+					pos = value.find(";");
 				
-				break;
-			
-			case(2) :  // line 2 (number of evolutions)
-				std::getline(myfile, line);
-				value = line;
-				pos = value.find(";");
-			
-				if (pos != std::string::npos)
-					value = value.substr(0, pos);
-			
-				evols = std::stoi(value);
-			
-				break;
-			
-			case(3) :  // line 3 (number of vertices)
-				std::getline(myfile, line);
-				value = line;
-				pos = value.find(";");
-			
-				if (pos != std::string::npos)
-					value = value.substr(0, pos);
-			
-				clients = std::stoi(value);
-				vertices.reserve(clients);  // allocate space for the vertices, representing the clients
-			
-				break;
-			
-			case(4) :  // line 4 (number of cars)
-				std::getline(myfile, line);
-				value = line;
-				pos = value.find(";");
-			
-				if (pos != std::string::npos)
-					value = value.substr(0, pos);
-			
-				cars = std::stoi(value);
-			
-				break;
-			
-			case(5) :  // line 5 (maximum time taken during each car trip)
-				std::getline(myfile, line);
-				value = line;
-				pos = value.find(";");
-			
-				if (pos != std::string::npos)
-					value = value.substr(0, pos);
-			
-				deadline = std::stoi(value);
-			
-				break;
+					if (pos != std::string::npos)
+						value = value.substr(0, pos);
 				
-			case(6) :  // line 6 (maximum car capacity)
-				std::getline(myfile, line);
-				value = line;
-				pos = value.find(";");
-			
-				if (pos != std::string::npos)
-					value = value.substr(0, pos);
-			
-				maxCapacity = std::stoi(value);
-			
-				break;
-			
-			default:  // line 7 and beyond (vertices)
-				std::getline(myfile, line);
-				std::string stringcut = line;
-				value = stringcut;
-
-				Vertice v;
-				v.setID(lineIdx-7);
-
-				pos = stringcut.find(";");
-				value.replace(pos, value.length(), "");
-				v.setX(std::stof(value));
-				stringcut = stringcut.substr(pos + 1);
-				value = stringcut;
+					p = std::stoi(value);
+					
+					break;
 				
-				pos = stringcut.find(";");								
-				value.replace(pos, value.length(), "");
-				v.setY(std::stof(value));
-				stringcut = stringcut.substr(pos + 1);
-				value = stringcut;
+				case(2) :  // line 2 (number of evolutions)
+					std::getline(myfile, line);
+					value = line;
+					pos = value.find(";");
 				
-				pos = stringcut.find(";");
-				value.replace(pos, value.length(), "");				
-				v.setCapacity(std::stoi(value));
-				stringcut = stringcut.substr(pos + 1);
-				value = stringcut;
-			  
-				v.setScore(std::stoi(value));
-				maxFit += v.getScore();
+					if (pos != std::string::npos)
+						value = value.substr(0, pos);
 				
-				vertices.push_back(v);
+					evols = std::stoi(value);
+				
+					break;
+				
+				case(3) :  // line 3 (number of vertices)
+					std::getline(myfile, line);
+					value = line;
+					pos = value.find(";");
+				
+					if (pos != std::string::npos)
+						value = value.substr(0, pos);
+				
+					clients = std::stoi(value) - 2;  // the number of clients does not include the origin and deposit
+					vertices.reserve(clients);  // allocate space for the vertices, representing the clients
+				
+					break;
+				
+				case(4) :  // line 4 (number of cars)
+					std::getline(myfile, line);
+					value = line;
+					pos = value.find(";");
+				
+					if (pos != std::string::npos)
+						value = value.substr(0, pos);
+				
+					cars = std::stoi(value);
+				
+					break;
+				
+				case(5) :  // line 5 (maximum time taken during each car trip)
+					std::getline(myfile, line);
+					value = line;
+					pos = value.find(";");
+				
+					if (pos != std::string::npos)
+						value = value.substr(0, pos);
+				
+					deadline = std::stoi(value);
+				
+					break;
+					
+				case(6) :  // line 6 (maximum car capacity)
+					std::getline(myfile, line);
+					value = line;
+					pos = value.find(";");
+				
+					if (pos != std::string::npos)
+						value = value.substr(0, pos);
+				
+					maxCapacity = std::stoi(value);
+				
+					break;
+					
+				case(7) :  // line 7 (vertice corresponding to the origin)
+					std::getline(myfile, line);
+					stringcut = line;
+					value = stringcut;
+					
+					pos = stringcut.find(";");
+					value.replace(pos, value.length(), "");
+					x = std::stof(value);
+					stringcut = stringcut.substr(pos + 1);
+					value = stringcut;
+					
+					pos = stringcut.find(";");								
+					value.replace(pos, value.length(), "");
+					y = std::stof(value);
+      	
+					decoder.setOrigin(std::make_pair(x,y));
+      	
+					break;
+				
+				default:  // line 8 and beyond (vertices and deposit)
+					std::getline(myfile, line);
+					stringcut = line;
+					value = stringcut;
+      	
+					pos = stringcut.find(";");
+					value.replace(pos, value.length(), "");
+      	
+					if( lineIdx - 8 == clients ) {
+						
+						x = std::stof(value);
+						stringcut = stringcut.substr(pos + 1);
+						value = stringcut;
+      	
+						pos = stringcut.find(";");								
+						value.replace(pos, value.length(), "");
+						y = std::stof(value);
+      	
+						decoder.setDeposit(std::make_pair(x,y));
+					}
+					else {
+      	
+						Vertice v;
+						v.setID(lineIdx-8);
+      	
+						v.setX(std::stof(value));
+						stringcut = stringcut.substr(pos + 1);
+						value = stringcut;
+      	
+						pos = stringcut.find(";");								
+						value.replace(pos, value.length(), "");
+						v.setY(std::stof(value));
+						stringcut = stringcut.substr(pos + 1);
+						value = stringcut;
+      	
+						pos = stringcut.find(";");
+						value.replace(pos, value.length(), "");				
+						v.setCapacity(std::stoi(value));
+						stringcut = stringcut.substr(pos + 1);
+						value = stringcut;
+      	
+						v.setScore(std::stoi(value));
+						maxFit += v.getScore();
+      	
+						vertices.push_back(v);					
+					}
 			}
 
 		}  // while (!myfile.eof())
 
-		int filtered = Clients::filter();  // filter vertices that cannot be taken		
+		int filtered = Clients::filter(decoder.getOrigin(), decoder.getDeposit());  // filter vertices that cannot be taken		
 
 		myfile.close();
 
 		rng.seed();  // initialise the random number generator
-
-		CtopDecoder decoder;	// initialise the decoder
 
 		BRKGA< CtopDecoder, MTRand > genAlg(clients-filtered, p, pe, pm, rhoe, decoder, rng, K, MAXT); // initialise the genetic algorithm
 		

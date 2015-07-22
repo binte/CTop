@@ -1,13 +1,13 @@
 # Macros:
 CPP= g++
 CFLAGS= -Wall -Wextra -pedantic -O3 -g -fopenmp -std=c++11
-OBJECTS= main.o CtopDecoder.o Clients.o Vertice.o
+OBJECTS= CtopDecoder.o Clients.o Vertice.o main.o
 TARGET= sample
 
 # Targets:
 main: $(OBJECTS)
 	$(CPP) $(CFLAGS) -o $(TARGET) $(OBJECTS)
-        
+
 main.o: main.cpp MTRand.h BRKGA.h
 	$(CPP) $(CFLAGS) -c main.cpp
 
@@ -26,4 +26,4 @@ clean:
 	rm -f $(OBJECTS) *~
 
 run:
-	./$(TARGET) dadosctop.dat
+	./$(TARGET) dados.dat
