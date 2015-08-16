@@ -171,7 +171,7 @@ BRKGA< Decoder, RNG >::BRKGA(unsigned _n, unsigned _p, double _pe, double _pm, d
 
 		// Initialize:
 		initialize(i);
-
+		
 		// Then just copy to previous:
 		previous[i] = new Population(*current[i]);
 	}
@@ -258,17 +258,34 @@ void BRKGA< Decoder, RNG >::exchangeElite(unsigned M) {
 
 template< class Decoder, class RNG >
 inline void BRKGA< Decoder, RNG >::initialize(const unsigned i) {
+
+/*	
+	std::cout << "i: " << i << std::endl;
+	std::cout << "p: " << p << std::endl;
+	std::cout << "n: " << n << std::endl;
+	getchar();
+*/	
+
+	
 	for(unsigned j = 0; j < p; ++j) {
-		for(unsigned k = 0; k < n; ++k) { (*current[i])(j, k) = refRNG.rand(); }
+	
+	//					std::cout << "j: " << j << std::endl;
+	
+		for(unsigned k = 0; k < n; ++k) {
+//					std::cout << "k: " << k << std::endl;
+			(*current[i])(j, k) = refRNG.randInt(100);  // TODO CURRENT VERSION USES INTS: HOW TO USE INTS BETWEEN 0 AND THE NUMBER OF VERTICES???
+	//			(*current[i])(j, k) = refRNG.rand();  //IN THE ORIGINAL VERSION, GENES ARE DOUBLES BETWEEN 0 AND 1, RANDOMLY CALCULATED	
+		}
 	}
+
+
 
 	// Decode:
 	#ifdef _OPENMP
 		#pragma omp parallel for num_threads(MAX_THREADS)
 	#endif
-	for(int j = 0; j < int(p); ++j) {
+	for(int j = 0; j < int(p); ++j)
 		current[i]->setFitness(j, refDecoder.decode((*current[i])(j)) );
-	}
 
 	// Sort:
 	current[i]->sortFitness();

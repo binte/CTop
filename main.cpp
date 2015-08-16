@@ -47,7 +47,7 @@ int main(int argc, char* argv[]) {
 	const double pm = 0.10;		// fraction of population to be replaced by mutants
 	const double rhoe = 0.70;	// probability that offspring inherit an allele from elite parent
 	const unsigned K = 3;		// number of independent populations 3
-	const unsigned MAXT = 4;	// number of threads for parallel decoding 2
+	const unsigned MAXT = 1;	// number of threads for parallel decoding 2
 
 	double x, y;
 	std::string line;
