@@ -26,7 +26,7 @@ std::pair<float,float> CtopDecoder::getDeposit(void) {
 }
 
 
-double CtopDecoder::decode(const std::vector< double >& chromosome) const {
+double CtopDecoder::decode(std::vector< double >& chromosome) const {
 				
 	int random, topPriorityGene = -1, counter;  // counter: number of positions to ignore, due to blacklisting
 	bool flag = true, fl = false;  // fl flags the choice of a gene, and flag indicates if it's possible to insert more vertices
@@ -255,12 +255,13 @@ double CtopDecoder::decode(const std::vector< double >& chromosome) const {
 			routes.at(std::get<0>(data2change)).push_back(prev);
   
 
-			// atualizar array trips com o novo gene, sendo que é descurada a ordenação
+			// update the trips' array with the newly selected gene. Ordering is not taken into account
 			trips.push_back(topPriorityGene);
 
-			// atualizar o peso do alelo
-			// topInd(ranking).setAllele(topPriorityGene, trips.size());
-  
+			// atualizar o peso do alelo			
+			chromosome.at(topPriorityGene) = trips.size();
+
+
 			// mudar o valor da flag que assinala a escolha dum gene para colocar na viagem para recomeçar novo processo
 			fl = false;
   

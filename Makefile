@@ -2,7 +2,7 @@
 CPP= g++
 CFLAGS= -Wall -Wextra -pedantic -O3 -g -fopenmp -std=c++11
 OBJECTS= CtopDecoder.o Clients.o Vertice.o main.o
-TARGET= sample
+TARGET= prog
 
 # Targets:
 main: $(OBJECTS)

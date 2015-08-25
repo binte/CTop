@@ -272,8 +272,7 @@ inline void BRKGA< Decoder, RNG >::initialize(const unsigned i) {
 	//					std::cout << "j: " << j << std::endl;
 	
 		for(unsigned k = 0; k < n; ++k) {
-//					std::cout << "k: " << k << std::endl;
-			(*current[i])(j, k) = refRNG.randInt(100);  // TODO CURRENT VERSION USES INTS: HOW TO USE INTS BETWEEN 0 AND THE NUMBER OF VERTICES???
+			(*current[i])(j, k) = refRNG.randInt(n);  // CURRENT VERSION USES INTS BETWEEN 0 AND THE NUMBER OF VERTICES
 	//			(*current[i])(j, k) = refRNG.rand();  //IN THE ORIGINAL VERSION, GENES ARE DOUBLES BETWEEN 0 AND 1, RANDOMLY CALCULATED	
 		}
 	}

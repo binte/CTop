@@ -79,7 +79,7 @@ public:
 	std::pair<float,float> getOrigin(void);
 	std::pair<float,float> getDeposit(void);
 
-	double decode(const std::vector< double >& chromosome) const;
+	double decode(std::vector< double >& chromosome) const;
 };
 
 #endif
