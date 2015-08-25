@@ -326,7 +326,8 @@ double CtopDecoder::decode(std::vector< double >& chromosome) const {
 	
 		totalBest = fitness;
   
-		std::cout <<  totalBest << std::endl;
+		if( !scriptVersion )
+			std::cout <<  totalBest << std::endl;
 	}
 
 	mutex.unlock();

@@ -48,6 +48,8 @@ std::mutex extern mutex;
 double extern totalBest;
 std::vector<std::vector<int>> extern bestRoutes;
 
+bool extern scriptVersion;
+
 
 /* struct used to change the order of sorting, so that the given chromosome can be processed in descending order as well */
 struct greater

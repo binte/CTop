@@ -16,6 +16,8 @@ int cars = 0;
 int maxFit = 0;
 double totalBest = 0;
 
+bool scriptVersion;
+
 MTRand rng;
 
 std::vector<Vertice> vertices;
@@ -26,7 +28,7 @@ std::vector<std::vector<int>> bestRoutes;
 
 int main(int argc, char* argv[]) {
 
-	if(argc != 2) {
+	if(argc != 3) {
 
 		std::cerr << "\nWrong parameter number\n" << std::endl;
 
@@ -56,6 +58,8 @@ int main(int argc, char* argv[]) {
 	
 	std::ifstream myfile;
 	myfile.open(argv[1]);
+	
+	scriptVersion = argv[2];
 
 	if (myfile.is_open()) {
 
@@ -233,12 +237,34 @@ int main(int argc, char* argv[]) {
 		strftime(bufFim, sizeof(bufFim), "%Y-%m-%d %X", &tstructFim);
 
 		std::cout << std::endl;
-		std::cout << "Begins at " << bufInicio << std::endl;
-		std::cout << " Ends at  " << bufFim << std::endl << std::endl;
+		std::cout << "Began at " << bufInicio << std::endl;
+		std::cout << "Ended at " << bufFim << std::endl << std::endl;
 		std::cout << "Best fitness = " << (maxFit - genAlg.getBestFitness()) << std::endl << std::endl;
 		
+		
+		if(scriptVersion) { // if the user has flagged the programme, so that the routes are also printed to the stdout
+		
+			/* Print the routes, each of which has been incremented, as well as each client, for them not to start by 0 */
+			for (unsigned i = 0; i < bestRoutes.size(); i++) {
+				
+				std::cout << "Route " << i + 1 << ": ";
+				
+				for (unsigned j = 0; j < bestRoutes[i].size(); j++) {
+				
+					std::cout << (bestRoutes[i][j] + 1);
+				
+					if (j != bestRoutes[i].size() - 1)
+						std::cout << "->";
+				}
+				
+				std::cout << std::endl;
+			}
+		
+		}
+		
+		
 		std::ofstream output;
-		output.open("resultado.txt", std::fstream::trunc); // remove the content of the output file, and open it
+		output.open("resultado.txt", std::fstream::trunc); // remove the previous content of the output file, and open it
 
 		output << "POPULATION: " << p << std::endl;
 		output << "EVOLUTIONS: " << evols << std::endl;

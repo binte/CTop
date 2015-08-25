@@ -26,4 +26,4 @@ clean:
 	rm -f $(OBJECTS) *~
 
 run:
-	./$(TARGET) dados.dat
+	./$(TARGET) dados.dat true
