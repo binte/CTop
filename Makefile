@@ -26,4 +26,4 @@ clean:
 	rm -f $(OBJECTS) *~
 
 run:
-	./$(TARGET) dados.dat true
+	./$(TARGET) Cp4.3m.txt false

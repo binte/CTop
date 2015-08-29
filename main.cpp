@@ -1,6 +1,7 @@
 #include <list>
 #include <fstream>
 #include <iostream>
+#include <sstream>
 #include <string>
 
 #include "CtopDecoder.h"
@@ -25,6 +26,17 @@ std::vector<Vertice> vertices;
 std::mutex mutex;
 std::vector<std::vector<int>> bestRoutes;
 
+
+bool to_bool(std::string str) {
+	
+	std::transform(str.begin(), str.end(), str.begin(), ::tolower);
+	std::istringstream is(str);
+	bool b;
+	
+	is >> std::boolalpha >> b;
+	
+	return b;
+}
 
 int main(int argc, char* argv[]) {
 
@@ -59,7 +71,7 @@ int main(int argc, char* argv[]) {
 	std::ifstream myfile;
 	myfile.open(argv[1]);
 	
-	scriptVersion = argv[2];
+	scriptVersion = to_bool(argv[2]);
 
 	if (myfile.is_open()) {
 

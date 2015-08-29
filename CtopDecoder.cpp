@@ -325,7 +325,7 @@ double CtopDecoder::decode(std::vector< double >& chromosome) const {
 			bestRoutes.push_back(routes.at(i)); 
 	
 		totalBest = fitness;
-  
+
 		if( !scriptVersion )
 			std::cout <<  totalBest << std::endl;
 	}
